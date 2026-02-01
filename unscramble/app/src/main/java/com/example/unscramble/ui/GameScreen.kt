@@ -83,6 +83,7 @@ fun GameScreen(
             onUserGuessChange = {gameViewModel.updateUserGuess(it)},
             userGuess = gameViewModel.userGuess,
             isGuessedWrong = gameUiState.isGuessedWordWrong,
+            isGameOver = gameUiState.isGameOver,
             wordCount = gameUiState.currentWordCount,
             onKeyboardDone = { gameViewModel.checkUserGuess() },
             currentScrambleWord = gameUiState.currentScrambleWord,
@@ -119,7 +120,12 @@ fun GameScreen(
                 )
             }
         }
-
+        if (gameUiState.isGameOver) {
+            FinalScoreDialog(
+                gameUiState.score,
+                {gameViewModel.resetGame()}
+                )
+        }
         GameStatus(score = gameUiState.score, modifier = Modifier.padding(20.dp))
     }
 }
@@ -142,6 +148,7 @@ fun GameLayout(
     onUserGuessChange: (String) -> Unit,
     userGuess: String,
     isGuessedWrong: Boolean,
+    isGameOver: Boolean,
     wordCount: Int,
     onKeyboardDone: KeyboardActionScope.() -> Unit,
     currentScrambleWord: String,
