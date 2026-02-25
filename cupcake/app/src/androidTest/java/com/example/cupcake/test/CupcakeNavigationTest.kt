@@ -3,15 +3,23 @@ package com.example.cupcake.test
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.ComposeNavigator
 import androidx.navigation.testing.TestNavHostController
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.cupcake.CupcakeApp
 import com.example.cupcake.CupcakeScreen
-import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
+@RunWith(AndroidJUnit4::class)
 class CupcakeNavigationTest {
 
     @get:Rule
@@ -31,5 +39,91 @@ class CupcakeNavigationTest {
     @Test
     fun cupcakeNavHost_verifyStartDestination() {
         navController.assertCurrentRouteName(CupcakeScreen.Start.name)
+    }
+
+    @Test
+    fun cupcakeNavHost_verifyBackNavigationNotShowOnStartOrderScreen() {
+        val backText = composeTestRule.activity.getString(com.example.cupcake.R.string.back_button)
+        composeTestRule.onNodeWithContentDescription(backText).assertDoesNotExist()
+    }
+
+    @Test
+    fun cupcakeNavHost_clickOneCupcake_navigatesToSelectFlavourScreen() {
+        navigateToFlavourScreen()
+        navController.assertCurrentRouteName(CupcakeScreen.Flavour.name)
+    }
+
+    @Test
+    fun cupcakeNavHost_clickOnBackButton_navigatesToStartScreen() {
+        navigateToFlavourScreen()
+        performNavigateUp()
+        navController.assertCurrentRouteName(CupcakeScreen.Start.name)
+    }
+
+    @Test
+    fun cupcakeNavHost_clickOnCancel_navigatesToStartScreen() {
+        navigateToFlavourScreen()
+        composeTestRule.onNodeWithStringId(com.example.cupcake.R.string.cancel).performClick()
+        navController.assertCurrentRouteName(CupcakeScreen.Start.name)
+    }
+
+    @Test
+    fun cupcakeNavHost_clickNext_navigatesToPickUpScreen() {
+        navigateToPickupScreen()
+    }
+
+    @Test
+    fun cupcakeNavHost_clickBackButton_navigatesFromPickUpToFlavourScreen() {
+        navigateToPickupScreen()
+        performNavigateUp()
+        navController.assertCurrentRouteName(CupcakeScreen.Flavour.name)
+    }
+
+    @Test
+    fun cupcakeNavHost_clickOnCancel_navigatesFromPickUpToStartScreen() {
+        navigateToPickupScreen()
+        composeTestRule.onNodeWithStringId(com.example.cupcake.R.string.cancel).performClick()
+        navController.assertCurrentRouteName(CupcakeScreen.Start.name)
+    }
+
+    @Test
+    fun cupcakeNavHost_clickNext_navigatesToSummaryScreen() {
+        navigateToSummaryScreen()
+        navController.assertCurrentRouteName(CupcakeScreen.Summary.name)
+    }
+
+    @Test
+    fun cupcakeNavHost_clickOnCancel_navigatesFromSummaryToStartScreen() {
+        navigateToSummaryScreen()
+        composeTestRule.onNodeWithStringId(com.example.cupcake.R.string.cancel).performClick()
+        navController.assertCurrentRouteName(CupcakeScreen.Start.name)
+    }
+
+    private fun navigateToFlavourScreen() {
+        composeTestRule.onNodeWithStringId(com.example.cupcake.R.string.one_cupcake).performClick()
+        composeTestRule.onNodeWithStringId(com.example.cupcake.R.string.chocolate).performClick()
+    }
+
+    private fun navigateToPickupScreen() {
+        navigateToFlavourScreen()
+        composeTestRule.onNodeWithStringId(com.example.cupcake.R.string.next).performClick()
+    }
+
+    private fun navigateToSummaryScreen() {
+        navigateToPickupScreen()
+        composeTestRule.onNodeWithText(getFormattedDate()).performClick()
+        composeTestRule.onNodeWithStringId(com.example.cupcake.R.string.next).performClick()
+    }
+
+    private fun performNavigateUp() {
+        val backText = composeTestRule.activity.getString(com.example.cupcake.R.string.back_button)
+        composeTestRule.onNodeWithContentDescription(backText).performClick()
+    }
+
+    private fun getFormattedDate(): String {
+        val calendar = Calendar.getInstance()
+        calendar.add(java.util.Calendar.DATE, 1)
+        val formatter = SimpleDateFormat("E MMM d", Locale.getDefault())
+        return formatter.format(calendar.time)
     }
 }
